@@ -12,7 +12,11 @@ defmodule Pool.AggregateSupervisor do
     import Supervisor.Spec
 
     children = [
-      worker(module, []),
+      # NOTE: This supervisor is only being used to group processes but
+      # specifically not being used to restart the process. This might seem odd
+      # but aggregates are created via the repository and monitored via the
+      # registry.
+      worker(module, [], restart: :temporary),
     ]
 
     opts = [strategy: :simple_one_for_one, name: module]

@@ -21,6 +21,7 @@ defmodule Pool.Mixfile do
       mod: {Pool, []},
       applications: [
         :logger,
+        :uuid,
       ],
     ]
   end
@@ -39,6 +40,8 @@ defmodule Pool.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:uuid, "~> 1.1.4"},
+    ]
   end
 end
