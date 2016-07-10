@@ -11,7 +11,7 @@ defmodule Pool.AggregateRepositoryTest do
         send :test, {id, Enum.count(events)}
       end
 
-      {:ok, pid} = Pool.AggregateRegistry.create(Pool.AggregateRegistry, id)
+      {:ok, pid} = Pool.AggregateIdentityMap.create(Pool.AggregateIdentityMap, id)
       Pool.Tournament.open_for_registration(pid, id)
       Pool.Tournament.register_player(pid, "tim")
       Pool.AggregateRepository.save(pid, save_events)
@@ -22,7 +22,7 @@ defmodule Pool.AggregateRepositoryTest do
 
   describe "Pool.AggregateRepoitory.load/1" do
     test "loads from the registry when present", %{id: id} do
-      {:ok, pid} = Pool.AggregateRegistry.create(Pool.AggregateRegistry, id)
+      {:ok, pid} = Pool.AggregateIdentityMap.create(Pool.AggregateIdentityMap, id)
 
       assert Pool.AggregateRepository.load(id) == {:ok, pid}
     end
@@ -32,7 +32,7 @@ defmodule Pool.AggregateRepositoryTest do
     end
   end
 
-  # Unique ids are required because Pool.AggregateRegistry is shared global
+  # Unique ids are required because Pool.AggregateIdentityMap is shared global
   # state between tests.
   defp generate_id(context) do
     %{id: UUID.uuid5(:dns, "my.domain.com/#{context.test}")}

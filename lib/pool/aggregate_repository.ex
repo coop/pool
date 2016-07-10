@@ -4,7 +4,7 @@ defmodule Pool.AggregateRepository do
 
   Examples:
 
-      {:ok, pid} = Pool.AggregateRegistry.create(Pool.AggregateRegistry, id)
+      {:ok, pid} = Pool.AggregateIdentityMap.create(Pool.AggregateIdentityMap, id)
       Pool.Tournament.open_for_registration(pid, player_id)
       Pool.Tournament.register_player(pid, player_id)
       Pool.Repository.save(pid)
@@ -20,7 +20,7 @@ defmodule Pool.AggregateRepository do
   end
 
   def load(id) do
-    case Pool.AggregateRegistry.lookup(Pool.AggregateRegistry, id) do
+    case Pool.AggregateIdentityMap.lookup(Pool.AggregateIdentityMap, id) do
       :error -> :error
       pid -> {:ok, pid}
     end

@@ -1,4 +1,4 @@
-defmodule Pool.AggregateRegistry do
+defmodule Pool.AggregateIdentityMap do
   use GenServer
 
   def start_link(name) do
