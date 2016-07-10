@@ -5,7 +5,8 @@ defmodule Pool.TournamentTest do
     test "allows a player to register" do
       Process.register self, :test
 
-      {:ok, pid} = Pool.Tournament.start_link("lol")
+      {:ok, pid} = Pool.Tournament.start_link
+      Pool.Tournament.open_for_registration(pid, "lol")
       Pool.Tournament.register_player(pid, "tim")
       callback = fn(id, events) ->
         send :test, {:count, id, Enum.count(events)}
@@ -13,13 +14,17 @@ defmodule Pool.TournamentTest do
 
       Pool.Tournament.process_uncommitted_changes(pid, callback)
 
-      assert_received {:count, "lol", 1}
+      assert_received {:count, "lol", 2}
     end
 
     test "players cannot register more than once" do
+      noop = fn(_, _) -> nil end
+
       Process.register self, :test
 
-      {:ok, pid} = Pool.Tournament.start_link("lol")
+      {:ok, pid} = Pool.Tournament.start_link
+      Pool.Tournament.open_for_registration(pid, "lol")
+      Pool.Tournament.process_uncommitted_changes(pid, noop)
       Pool.Tournament.register_player(pid, "tim")
       Pool.Tournament.register_player(pid, "tim")
       Pool.Tournament.register_player(pid, "tim")
@@ -38,7 +43,8 @@ defmodule Pool.TournamentTest do
     test "loading from existing events" do
       Process.register self, :test
 
-      {:ok, pid_1} = Pool.Tournament.start_link("lol")
+      {:ok, pid_1} = Pool.Tournament.start_link
+      Pool.Tournament.open_for_registration(pid_1, "lol")
       Pool.Tournament.register_player(pid_1, "tim")
       Pool.Tournament.register_player(pid_1, "tammy")
       get_events = fn(_id, events) ->
@@ -51,7 +57,7 @@ defmodule Pool.TournamentTest do
         {:events, events} -> events
       end
 
-      {:ok, pid_2} = Pool.Tournament.start_link("lol")
+      {:ok, pid_2} = Pool.Tournament.start_link
       Pool.Tournament.load_from_history(pid_2, Enum.reverse(events))
       Pool.Tournament.register_player(pid_2, "tim")
       Pool.Tournament.register_player(pid_2, "tammy")

@@ -1,18 +1,20 @@
 defmodule Pool.Tournament do
   use GenServer
 
-  def start_link(id) do
-    GenServer.start_link(__MODULE__, id)
+  def start_link do
+    GenServer.start_link(__MODULE__, [])
   end
 
-  def init(id) do
+  def init([]) do
     state = %{
-      id: id,
-      player_ids: [],
       uncommitted_changes: [],
     }
 
     {:ok, state}
+  end
+
+  def open_for_registration(pid, id) do
+    GenServer.call(pid, {:open_for_registration, id})
   end
 
   def register_player(pid, player_id) do
@@ -27,12 +29,24 @@ defmodule Pool.Tournament do
     GenServer.call(pid, {:process_uncommitted_changes, fun})
   end
 
+  # TODO: validations
+  #
+  # * idempotent for the same id
+  # * error when called with a different ID
+  def handle_call({:open_for_registration, id}, _from, state) do
+    event = %Pool.Tournament.OpenedForRegistration{
+      id: id,
+    }
+
+    {:reply, id, raise_event(event, state)}
+  end
+
   # TODO: A player cannot register ...
   #
   # * if registrations are closed
   # * if they have already registered
   def handle_call({:register_player, player_id}, _from, state) do
-    if player_id in state.player_ids do
+    if player_id in Map.get(state, :player_ids, []) do
       {:reply, player_id, state}
     else
       event = %Pool.Tournament.PlayerRegistered{
@@ -69,8 +83,12 @@ defmodule Pool.Tournament do
     apply_events(events, apply_event(event, state))
   end
 
+  defp apply_event(%Pool.Tournament.OpenedForRegistration{id: id}, state) do
+    Map.put(state, :id, id)
+  end
+
   defp apply_event(%Pool.Tournament.PlayerRegistered{player_id: player_id}, state) do
-    Map.update! state, :player_ids, fn(player_ids) ->
+    Map.update state, :player_ids, [player_id], fn(player_ids) ->
       [player_id | player_ids]
     end
   end
