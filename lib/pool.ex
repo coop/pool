@@ -1,22 +1,21 @@
 defmodule Pool do
   use Application
 
-  # See http://elixir-lang.org/docs/stable/elixir/Application.html
-  # for more information on OTP Applications
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    # Define workers and child supervisors to be supervised
     children = [
-      # Starts a worker by calling: Pool.Worker.start_link(arg1, arg2, arg3)
-      # worker(Pool.Worker, [arg1, arg2, arg3]),
+      # TODO: re-evaluate if this supervision tree is correct. At this stage
+      # there is a supervisor per aggregate type that manages individual
+      # aggregates BUT there is a shared identity map between all aggregates.
+      # If the map fails all aggregate type supervisors (and therefore
+      # aggregates) need to be restarted. Right now I'm OK with this but maybe
+      # an identity map per type is a better approach.
       worker(Pool.AggregateIdentityMap, [Pool.AggregateIdentityMap]),
       supervisor(Pool.AggregateSupervisor, [Pool.Tournament]),
     ]
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Pool.Supervisor]
+    opts = [strategy: :rest_for_one, name: Pool.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
