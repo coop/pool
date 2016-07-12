@@ -5,6 +5,8 @@ defmodule Pool do
     import Supervisor.Spec, warn: false
 
     children = [
+      worker(Pool.Bus, []),
+
       # TODO: re-evaluate if this supervision tree is correct. At this stage
       # there is a supervisor per aggregate type that manages individual
       # aggregates BUT there is a shared identity map between all aggregates.
