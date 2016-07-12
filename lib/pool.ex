@@ -6,18 +6,10 @@ defmodule Pool do
 
     children = [
       worker(Pool.Bus, []),
-
-      # TODO: re-evaluate if this supervision tree is correct. At this stage
-      # there is a supervisor per aggregate type that manages individual
-      # aggregates BUT there is a shared identity map between all aggregates.
-      # If the map fails all aggregate type supervisors (and therefore
-      # aggregates) need to be restarted. Right now I'm OK with this but maybe
-      # an identity map per type is a better approach.
-      worker(Pool.AggregateIdentityMap, [Pool.AggregateIdentityMap]),
-      supervisor(Pool.AggregateSupervisor, [Pool.Tournament]),
+      supervisor(Pool.Tournament.Supervisor, [Pool.Tournament.Supervisor]),
     ]
 
-    opts = [strategy: :rest_for_one, name: Pool.Supervisor]
+    opts = [strategy: :one_for_one, name: Pool.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

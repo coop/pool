@@ -1,6 +1,8 @@
 defmodule Pool.Tournament do
   use GenServer
 
+  alias Pool.Tournament.Events.{OpenedForRegistration, PlayerRegistered}
+
   def start_link do
     GenServer.start_link(__MODULE__, [])
   end
@@ -34,9 +36,7 @@ defmodule Pool.Tournament do
   # * idempotent for the same id
   # * error when called with a different ID
   def handle_call({:open_for_registration, id}, _from, state) do
-    event = %Pool.Tournament.OpenedForRegistration{
-      id: id,
-    }
+    event = %OpenedForRegistration{id: id}
 
     {:reply, id, raise_event(event, state)}
   end
@@ -49,7 +49,7 @@ defmodule Pool.Tournament do
     if player_id in Map.get(state, :player_ids, []) do
       {:reply, player_id, state}
     else
-      event = %Pool.Tournament.PlayerRegistered{
+      event = %PlayerRegistered{
         id: state.id,
         player_id: player_id,
       }
@@ -83,11 +83,11 @@ defmodule Pool.Tournament do
     apply_events(events, apply_event(event, state))
   end
 
-  defp apply_event(%Pool.Tournament.OpenedForRegistration{id: id}, state) do
+  defp apply_event(%OpenedForRegistration{id: id}, state) do
     Map.put(state, :id, id)
   end
 
-  defp apply_event(%Pool.Tournament.PlayerRegistered{player_id: player_id}, state) do
+  defp apply_event(%PlayerRegistered{player_id: player_id}, state) do
     Map.update state, :player_ids, [player_id], fn(player_ids) ->
       [player_id | player_ids]
     end

@@ -6,8 +6,8 @@ defmodule Pool.Bus do
   def start_link do
     case GenEvent.start_link(name: @name) do
       {:ok, pid} ->
-        add_handler(Pool.TournamentReport)
-        add_handler(Pool.TournamentCommandHandler)
+        add_handler(Pool.Tournament.ReadModels.Report)
+        add_handler(Pool.Tournament.CommandHandlers.Handler)
         {:ok, pid}
     end
   end
@@ -17,7 +17,7 @@ defmodule Pool.Bus do
   end
 
   def players_in(id) do
-    GenEvent.call(@name, Pool.TournamentReport, {:players_in, id})
+    GenEvent.call(@name, Pool.Tournament.ReadModels.Report, {:players_in, id})
   end
 
   def publish_event(event) do

@@ -1,5 +1,7 @@
-defmodule Pool.TournamentReport do
+defmodule Pool.Tournament.ReadModels.Report do
   use GenEvent
+
+  alias Pool.Tournament.Events.{OpenedForRegistration, PlayerRegistered}
 
   def init([]) do
     {:ok, %{}}
@@ -11,13 +13,13 @@ defmodule Pool.TournamentReport do
   #     "id" => {
   #       player_ids: [ ... ],
   #     }
-  def handle_event(%Pool.Tournament.OpenedForRegistration{id: id}, state) do
+  def handle_event(%OpenedForRegistration{id: id}, state) do
     state = Map.put(state, id, %{player_ids: []})
 
     {:ok, state}
   end
 
-  def handle_event(%Pool.Tournament.PlayerRegistered{id: id, player_id: player_id}, state) do
+  def handle_event(%PlayerRegistered{id: id, player_id: player_id}, state) do
     state = Kernel.update_in state, [id, :player_ids], fn(player_ids) ->
       [player_id | player_ids]
     end

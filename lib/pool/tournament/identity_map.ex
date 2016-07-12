@@ -1,5 +1,7 @@
-defmodule Pool.AggregateIdentityMap do
+defmodule Pool.Tournament.IdentityMap do
   use GenServer
+
+  alias Pool.Tournament.AggregateRootSupervisor
 
   def start_link(name) do
     GenServer.start_link(__MODULE__, [], name: name)
@@ -22,7 +24,7 @@ defmodule Pool.AggregateIdentityMap do
     if pid do
       {:reply, {:ok, pid}, state}
     else
-      {:ok, pid} = Pool.AggregateSupervisor.new(Pool.Tournament)
+      {:ok, pid} = AggregateRootSupervisor.new(AggregateRootSupervisor)
       ref = Process.monitor(pid)
       refs = Map.put(refs, ref, id)
       pids = Map.put(pids, id, pid)

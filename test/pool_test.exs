@@ -1,6 +1,8 @@
 defmodule PoolTest do
   use ExUnit.Case, async: true
 
+  alias Pool.Tournament.Commands.{OpenForRegistration, RegisterPlayer}
+
   defmodule ExampleHandler do
     use GenEvent
 
@@ -23,21 +25,21 @@ defmodule PoolTest do
 
     Pool.Bus.add_handler(ExampleHandler, self)
 
-    Pool.Bus.send_command(%Pool.Tournament.OpenForRegistration{id: tournament_1})
-    Pool.Bus.send_command(%Pool.Tournament.RegisterPlayer{id: tournament_1, player_id: player_1})
-    Pool.Bus.send_command(%Pool.Tournament.RegisterPlayer{id: tournament_1, player_id: player_2})
+    Pool.Bus.send_command(%OpenForRegistration{id: tournament_1})
+    Pool.Bus.send_command(%RegisterPlayer{id: tournament_1, player_id: player_1})
+    Pool.Bus.send_command(%RegisterPlayer{id: tournament_1, player_id: player_2})
 
-    Pool.Bus.send_command(%Pool.Tournament.OpenForRegistration{id: tournament_2})
-    Pool.Bus.send_command(%Pool.Tournament.RegisterPlayer{id: tournament_2, player_id: player_3})
+    Pool.Bus.send_command(%OpenForRegistration{id: tournament_2})
+    Pool.Bus.send_command(%RegisterPlayer{id: tournament_2, player_id: player_3})
 
     # GenEvent.notify is async so I'm registering a handler that forwards all
     # events to the test process. Alternatively I could :timer.sleep(10) but
     # that feels gross... This is super verbose though... Ugh.
-    assert_receive %Pool.Tournament.OpenForRegistration{id: ^tournament_1}, 10
-    assert_receive %Pool.Tournament.RegisterPlayer{id: ^tournament_1, player_id: ^player_1}, 10
-    assert_receive %Pool.Tournament.RegisterPlayer{id: ^tournament_1, player_id: ^player_2}, 10
-    assert_receive %Pool.Tournament.OpenForRegistration{id: ^tournament_2}, 10
-    assert_receive %Pool.Tournament.RegisterPlayer{id: ^tournament_2, player_id: ^player_3}, 10
+    assert_receive %OpenForRegistration{id: ^tournament_1}, 10
+    assert_receive %RegisterPlayer{id: ^tournament_1, player_id: ^player_1}, 10
+    assert_receive %RegisterPlayer{id: ^tournament_1, player_id: ^player_2}, 10
+    assert_receive %OpenForRegistration{id: ^tournament_2}, 10
+    assert_receive %RegisterPlayer{id: ^tournament_2, player_id: ^player_3}, 10
 
     assert [^player_3] = Pool.Bus.players_in(tournament_2)
     assert [^player_1, ^player_2] = Pool.Bus.players_in(tournament_1)
